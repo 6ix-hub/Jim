@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>JIM — Jason’s Innovative Multiverse</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<style>
+  body {
+    background:#0b0b0f;
+    color:#eaeaea;
+    font-family: system-ui, sans-serif;
+    text-align:center;
+    padding:10px;
+  }
+  h1 { margin:5px 0; }
+  video {
+    width:100%;
+    max-width:360px;
+    border-radius:12px;
+    border:2px solid #333;
+  }
+  .state {
+    font-size:1.3em;
+    margin:10px 0;
+    font-weight:bold;
+  }
+  .hostile { color:#ff4d4d; }
+  .unstable { color:#ffd24d; }
+  .stable { color:#4dff88; }
+  button {
+    padding:10px 16px;
+    margin:6px;
+    border-radius:8px;
+    border:none;
+    background:#222;
+    color:white;
+    font-size:1em;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>🤖 JIM</h1>
+<p><em>Jason’s Innovative Multiverse</em></p>
+
+<video id="video" autoplay muted></video>
+
+<div id="state" class="state">Initializing…</div>
+
+<button onclick="manualBet()">I Entered a Bet</button>
+<button onclick="manualCash()">I Cashed Out</button>
+
+<script>
+/* =======================
+   CORE MEMORY & STATE
+======================= */
+
+let multipliers = [];
+let ignoredWarnings = 0;
+let softLock = false;
+let lastState = "STABLE";
+let lastSpoken = 0;
+
+const memory = {
+  ignoredCount: 0,
+  disciplinedCount: 0
+};
+
+/* =======================
+   CAMERA SETUP
+======================= */
+
+const video = document.getElementById("video");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => video.srcObject = stream)
+  .catch(() => speak("Camera access denied. I cannot observe."))
+
+/* =======================
+   OCR LOOP
+======================= */
+
+setInterval(captureFrame, 5000);
+
+function captureFrame() {
+  if (softLock) return;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0);
+
+  Tesseract.recognize(canvas, "eng").then(({ data }) => {
+    const found = data.text.match(/\d+(\.\d+)?x/g);
+    if (found) {
+      found.forEach(f => {
+        let val = parseFloat(f.replace("x",""));
+        if (!isNaN(val)) {
+          multipliers.push(val);
+          if (multipliers.length > 30) multipliers.shift();
+        }
+      });
+      evaluateState();
+    }
+  });
+}
+
+/* =======================
+   STATE ENGINE
+======================= */
+
+function evaluateState() {
+  if (multipliers.length < 5) return;
+
+  const recent = multipliers.slice(-10);
+  const lows = recent.filter(x => x < 1.5).length;
+  const highs = recent.filter(x => x > 3).length;
+
+  let state = "STABLE";
+
+  if (lows >= 5) state = "HOSTILE";
+  else if (lows >= 3) state = "UNSTABLE";
+
+  updateUI(state);
+  maybeSpeak(state);
+
+  lastState = state;
+}
+
+function updateUI(state) {
+  const el = document.getElementById("state");
+  el.className = "state";
+
+  if (state === "HOSTILE") {
+    el.textContent = "🟥 HOSTILE ENVIRONMENT";
+    el.classList.add("hostile");
+  } else if (state === "UNSTABLE") {
+    el.textContent = "🟨 UNSTABLE ENVIRONMENT";
+    el.classList.add("unstable");
+  } else {
+    el.textContent = "🟩 STABLE ENVIRONMENT";
+    el.classList.add("stable");
+  }
+}
+
+/* =======================
+   JIM’S VOICE
+======================= */
+
+function speak(text) {
+  const now = Date.now();
+  if (now - lastSpoken < 6000) return; // anti-spam
+
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "en-GB";
+  msg.rate = 0.95;
+  msg.pitch = 0.9;
+  speechSynthesis.speak(msg);
+
+  lastSpoken = now;
+}
+
+function maybeSpeak(state) {
+  if (state === lastState) return;
+
+  if (state === "HOSTILE") {
+    speak("Sir. This environment is hostile. A wise man avoids unnecessary losses.");
+  }
+  if (state === "UNSTABLE") {
+    speak("Volatility is unstable. Proceed only with restraint.");
+  }
+  if (state === "STABLE") {
+    speak("Conditions appear calmer. Conservative play, if any.");
+  }
+}
+
+/* =======================
+   USER ACTIONS
+======================= */
+
+function manualBet() {
+  if (lastState === "HOSTILE") {
+    ignoredWarnings++;
+    memory.ignoredCount++;
+
+    speak("I advised against this. Let us observe carefully.");
+
+    if (ignoredWarnings >= 3) {
+      softLock = true;
+      speak("I will remain silent for a while. Reflect.");
+    }
+  }
+}
+
+function manualCash() {
+  memory.disciplinedCount++;
+  ignoredWarnings = Math.max(0, ignoredWarnings - 1);
+
+  speak("Wise decision. Preservation matters more than pride.");
+
+  if (softLock && memory.disciplinedCount >= 2) {
+    softLock = false;
+    speak("Discipline noted. I will resume assistance.");
+  }
+}
+</script>
+
+</body>
+</html>

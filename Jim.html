@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jim 2.5 — Guardian</title>
+<style>
+  body { margin:0; background:#111; color:#fff; font-family:sans-serif; text-align:center; }
+  #video { width:100%; height:auto; transform:scaleX(-1); }
+  #status { margin-top:10px; font-size:1.2em; }
+  button { margin:5px; padding:10px 15px; font-size:1em; border:none; border-radius:8px; cursor:pointer; }
+  .stable { color:#0f0; }
+  .unstable { color:#ff0; }
+  .hostile { color:#f33; }
+</style>
+</head>
+<body>
+
+<h1>🤖 JIM 2.5</h1>
+<p>Jason's Innovative Multiverse — Guardian</p>
+
+<video id="video" autoplay playsinline></video>
+<p id="status" class="stable">Initializing...</p>
+<div>
+  <button onclick="enteredBet()">Entered Bet</button>
+  <button onclick="cashedOut()">Cashed Out</button>
+</div>
+
+<script>
+let video = document.getElementById('video');
+let status = document.getElementById('status');
+
+let values = [];
+let times = [];
+let lastState = "STABLE";
+let softLockLevel = 0;
+let hardcore = true;
+let trustLevel = 5;
+let lastSpoken = 0;
+
+// ==== Voice Setup ====
+let tts = new SpeechSynthesisUtterance();
+tts.lang = 'en-GB';
+function speak(text, urgent=false){
+  let now = Date.now();
+  if(!urgent && now - lastSpoken < 6000) return;
+  tts.text = text;
+  tts.rate = urgent ? 0.85 : 0.95;
+  tts.pitch = urgent ? 0.85 : 0.95;
+  window.speechSynthesis.speak(tts);
+  lastSpoken = now;
+}
+
+// ==== Camera Setup ====
+navigator.mediaDevices.getUserMedia({
+  video: { facingMode: { exact: "environment" } }, // BACK camera
+  audio: false
+}).then(stream => {
+  video.srcObject = stream;
+}).catch(err => {
+  console.error("Camera error:", err);
+  speak("Camera access denied. I cannot observe.");
+});
+
+// ==== Helpers ====
+function recordValue(v){
+  values.push(v);
+  times.push(Date.now());
+  if(values.length > 40){ values.shift(); times.shift(); }
+}
+
+function crashVelocity(){
+  if(times.length < 2) return 0;
+  let dt = times[times.length-1]-times[times.length-2];
+  return dt===0 ? 0 : 1000/dt;
+}
+
+function falseCalm(){
+  let r = values.slice(-5);
+  return r.filter(v => v>=1.8 && v<=2.5).length>=3 && r.some(v=>v<1.4);
+}
+
+function evaluateState(){
+  if(values.length<6) return lastState;
+  let r = values.slice(-10);
+  let lows = r.filter(v=>v<1.5).length;
+  let speed = crashVelocity();
+  let state = "STABLE";
+  if(lows>=5 || speed>1.8) state="HOSTILE";
+  else if(lows>=3 || falseCalm()) state="UNSTABLE";
+  
+  if(state != lastState) speakState(state);
+  lastState = state;
+  status.innerText = state;
+  status.className = state.toLowerCase();
+  return state;
+}
+
+function speakState(state){
+  if(state==="HOSTILE") speak("Sir… no. This environment is hostile. Step back.", true);
+  if(state==="UNSTABLE") speak("This calm is deceptive. Restraint is advised.");
+  if(state==="STABLE") speak("Conditions calmer. Discipline remains essential.");
+}
+
+// ==== Behaviour Memory ====
+function hour(){ return new Date().getHours(); }
+let chaseHours = {}; // hour: count
+let disciplineHours = {};
+
+function markHour(key){
+  let h = hour();
+  if(key==="chase") chaseHours[h] = (chaseHours[h]||0)+1;
+  else disciplineHours[h] = (disciplineHours[h]||0)+1;
+}
+
+function dangerHour(){
+  let h = hour();
+  return (chaseHours[h]||0) > ((disciplineHours[h]||0)+2);
+}
+
+// ==== User Actions ====
+function enteredBet(){
+  markHour("chase");
+  trustLevel -= 1;
+  if(dangerHour()) speak("This hour historically leads to impulsive decisions.", true);
+  if(lastState==="HOSTILE"){
+    softLockLevel++;
+    if(hardcore && softLockLevel>=2) speak("I will not assist reckless behaviour.", true);
+    else speak("I advised against this.");
+  }
+}
+
+function cashedOut(){
+  markHour("discipline");
+  trustLevel += 1;
+  softLockLevel = Math.max(0, softLockLevel-1);
+  speak("Wise decision. Preservation matters more than pride.");
+  if(softLockLevel===0 && trustLevel>=6) speak("Trust restored. I am fully present.");
+}
+
+// ==== Demo Random Values Feed (for testing) ====
+setInterval(()=>{
+  let demo = Math.random()*3+1; // simulate multiplier 1-4x
+  recordValue(demo);
+  evaluateState();
+}, 1500);
+
+</script>
+</body>
+</html>

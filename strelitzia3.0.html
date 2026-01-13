@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Anniversary 💖</title>
+<style>
+body { margin:0; padding:0; font-family:'Helvetica', sans-serif; overflow:hidden; background:black; color:white; height:100vh;}
+#introPage,#messagePage{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:5;}
+button{padding:15px 35px;margin:10px;font-size:20px;border-radius:50px;border:none;cursor:pointer;}
+#messagePage{display:none;}
+#background{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;overflow:hidden;}
+#background img{position:absolute;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 2s ease-in-out;}
+#romanticText{position:absolute;top:60%;width:90%;max-width:800px;margin:auto;left:0;right:0;font-size:20px;font-weight:bold;line-height:1.6;text-align:center;z-index:2;color:#fff;text-shadow:0 0 15px #ff69b4,0 0 25px #ff1493;}
+.heart{position:absolute;width:18px;height:18px;background:red;transform:rotate(-45deg);border-radius:50%;box-shadow:0 0 12px yellow,0 0 20px pink;}
+.heart:before,.heart:after{content:"";position:absolute;width:18px;height:18px;background:red;border-radius:50%;}
+.heart:before{top:-9px;left:0;} .heart:after{left:9px;top:0;}
+.particle{position:absolute;width:6px;height:6px;border-radius:50%;background:yellow;opacity:0.8;pointer-events:none;animation:particleMove 1s linear forwards;}
+@keyframes particleMove{0%{transform:translate(0,0);opacity:1;}100%{transform:translate(calc(-30px+60px*var(--rand)),-60px);opacity:0;}}
+#secretBtn{position:absolute;display:none;padding:20px 40px;font-size:22px;background:red;color:white;border:none;border-radius:50px;cursor:pointer;z-index:3;text-align:center;}
+#secretNote{display:none;position:absolute;top:20%;width:90%;max-width:800px;margin:auto;left:0;right:0;font-size:20px;font-weight:bold;text-align:center;color:#ff69b4;text-shadow:0 0 15px #ff1493;z-index:2;}
+iframe{display:none;}
+</style>
+</head>
+<body>
+
+<!-- INTRO PAGE -->
+<div id="introPage">
+  <audio id="introVoice" src="intro.mp3" autoplay></audio>
+  <p style="font-size:22px;text-align:center;margin:20px;">Ah Hello ma'am, you must be the gorgeous Anna Jason told me about… would you like to see Jason's message?</p>
+  <div>
+    <button id="yesBtn">Yes 😏</button>
+    <button id="noBtn">No 😅</button>
+  </div>
+</div>
+
+<!-- MESSAGE PAGE -->
+<div id="messagePage">
+  <p id="choiceResponse" style="font-size:22px;margin-bottom:20px;"></p>
+</div>
+
+<!-- BACKGROUND SLIDESHOW -->
+<div id="background">
+    <img src="photo1.jpg">
+    <img src="photo2.jpg">
+    <img src="photo3.jpg">
+    <img src="photo4.jpg">
+    <img src="photo5.jpg">
+    <img src="photo6.jpg">
+    <img src="photo7.jpg">
+</div>
+
+<div id="romanticText"></div>
+<button id="secretBtn">Tap Me 💌</button>
+<div id="secretNote"></div>
+
+<iframe id="bgMusic" src="https://www.youtube.com/embed/0TliiC1yq44?autoplay=1&loop=1&playlist=0TliiC1yq44&mute=1&controls=0"></iframe>
+<audio id="bellSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+
+<script>
+// INTRO CHOICE LOGIC
+const introPage=document.getElementById("introPage");
+const messagePage=document.getElementById("messagePage");
+const yesBtn=document.getElementById("yesBtn");
+const noBtn=document.getElementById("noBtn");
+const choiceResponse=document.getElementById("choiceResponse");
+
+function showMessagePage(responseText){
+    introPage.style.display="none";
+    messagePage.style.display="flex";
+    choiceResponse.innerText=responseText;
+    setTimeout(startMainCinematic,1500);
+}
+
+yesBtn.onclick=()=>{ showMessagePage("Wise choice ma'am, now enjoy 😏❤️"); }
+noBtn.onclick=()=>{ showMessagePage("Ah he knew you'd refuse, so he ordered to show you anyways 😏❤️"); }
+
+// BACKGROUND SLIDESHOW
+const bgImages=document.querySelectorAll("#background img");
+let bgIndex=0;
+bgImages[0].style.opacity=1;
+setInterval(()=>{ bgImages[bgIndex].style.opacity=0; bgIndex=(bgIndex+1)%bgImages.length; bgImages[bgIndex].style.opacity=1; },5000);
+
+// HEARTS WITH PARTICLES
+function spawnHeart(){
+    const h=document.createElement("div");
+    h.className="heart";
+    h.style.left=Math.random()*window.innerWidth+"px";
+    h.style.top=Math.random()*window.innerHeight+"px";
+    document.body.appendChild(h);
+    for(let k=0;k<6;k++){
+        const p=document.createElement("div");
+        p.className="particle";
+        p.style.left=parseFloat(h.style.left)+9+"px";
+        p.style.top=parseFloat(h.style.top)+9+"px";
+        p.style.setProperty("--rand",Math.random());
+        document.body.appendChild(p);
+        setTimeout(()=>p.remove(),1000);
+    }
+    setTimeout(()=>h.remove(),1500);
+}
+
+// MAIN CINEMATIC LOGIC
+function startMainCinematic(){
+    messagePage.style.display="none";
+    const romanticText=document.getElementById("romanticText");
+    const mainText=`Happy anniversary Ml 🥰❤️.
+Daddy loves you beyond what the universe can fathom 🥰❤️,
+I don't know how but if you being in my life was fate 🥰❤️
+I owe everything to it ❤️ because it brought you at the right time when I needed you ❤️🥺,
+your smile, your laughter, your eyes, your beautiful melanin skin 🥵❤️
+that says "Hey Jay it’s time for you to get high now" 🥵😭😩
+God it's too hot to handle 😅🥵 honestly 😩🤝🏽
+ma'am you're my wildest fantasy 🥺❤️
+something I only ever dreamed of 🥵❤️
+the perfect temptation 😅🥵
+if seeing you smile everyday would drag me to hell 😭🥵
+I'd gladly see you smile everyday 🥰❤️
+so that when I reach hell I'd brag to the devil and say 😊🥵🥰
+I saw heaven on earth without entering it 😅🥵❤️
+Hunny I love you so very much 🥺❤️
+
+Happy 2+ Months to us 🥰❤️
+and many more to come 🥺❤️`;
+
+    let i=0;
+    function typeWriter(){
+        if(i<mainText.length){
+            romanticText.innerHTML+=mainText[i]==="\n"? "<br>":mainText[i];
+            i++;
+            romanticText.style.top=(60-i*0.05)+"%"; // faster cinematic float
+            romanticText.style.left=(5+Math.sin(i*0.05)*2)+"%";
+            setTimeout(typeWriter,30);
+        } else { showFloatingButton(); }
+    }
+    typeWriter();
+    setInterval(spawnHeart,400);
+}
+
+// FLOATING BUTTON
+const secretBtn=document.getElementById("secretBtn");
+function showFloatingButton(){
+    secretBtn.style.display="block";
+    let x=Math.random()*(window.innerWidth-200);
+    let y=Math.random()*(window.innerHeight-100);
+    let dx=3,dy=2;
+    secretBtn.style.left=x+"px";
+    secretBtn.style.top=y+"px";
+    const floatInterval=setInterval(()=>{
+        x+=dx;y+=dy;
+        if(x<0||x>window.innerWidth-200)dx*=-1;
+        if(y<0||y>window.innerHeight-50)dy*=-1;
+        secretBtn.style.left=x+"px";
+        secretBtn.style.top=y+"px";
+    },20);
+}
+
+// SECRET MESSAGE
+const secretText=`The Bible says He that finds a wife finds a good thing 🥰❤️,
+I mean you're not my wife yet but spiritually you are 😩🤝🏽
+so picture this 🥰❤️
+a white wedding 🥰❤️
+your dad brings you to me,
+you're smiling so bright I can’t stop blushing 😭❤️
+he hands you over to me 🥰❤️
+and the next thing I say is "I Do" 🥰❤️
+I’ll keep praying the day comes 🥰🥵
+but until then 😭🤝🏽
+never stop looking gorgeous like you always do 🥵❤️`;
+
+const secretNote=document.getElementById("secretNote");
+const bellSound=document.getElementById("bellSound");
+const bgMusic=document.getElementById("bgMusic");
+
+secretBtn.onclick=()=>{
+    document.getElementById("romanticText").style.display="none";
+    secretBtn.style.display="none";
+    secretNote.style.display="block";
+    secretNote.innerHTML="";
+    bellSound.play();
+    let j=0;
+    function typeSecret(){
+        if(j<secretText.length){
+            secretNote.innerHTML+=secretText[j]==="\n"? "<br>":secretText[j];
+            j++;
+            setTimeout(typeSecret,35);
+        }
+    }
+    typeSecret();
+};
+
+// UNMUTE MUSIC ON FIRST TAP
+document.body.addEventListener("click",()=>{ bgMusic.src=bgMusic.src.replace("mute=1","mute=0"); },{once:true});
+</script>
+
+</body>
+</html>
